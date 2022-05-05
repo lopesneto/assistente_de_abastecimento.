@@ -14,7 +14,12 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Assistente de abastecimento'),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => TelaInicial(),
+        '/analisar-precos': (context) =>
+            MyHomePage(title: 'Assistente de abastecimento')
+      },
     );
   }
 }
@@ -144,6 +149,187 @@ class _MyHomePageState extends State<MyHomePage> {
               )
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class TelaInicial extends StatefulWidget {
+  const TelaInicial({Key? key}) : super(key: key);
+
+  @override
+  State<TelaInicial> createState() => _TelaInicialState();
+}
+
+class _TelaInicialState extends State<TelaInicial> {
+  final _formKey = GlobalKey<FormState>();
+  String? marca;
+  String? modelo;
+  int? ano;
+  int? volumeDoTanque;
+
+  /// Retorna o formulário dos dados do veículo.
+  /// O formulário contém os campos:
+  /// * marca
+  /// * modelo
+  /// * ano
+  /// * volume do tanque em litros
+  Widget _buildForm(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          TextFormField(
+            decoration: const InputDecoration(
+              labelText: 'Marca',
+              helperText: 'Informe o nome do fabricante ou da montadora',
+              border: OutlineInputBorder(),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Informe a marca do veículo';
+              }
+              return null;
+            },
+            onSaved: (value) {
+              marca = value;
+            },
+          ),
+          SizedBox(
+            height: 30,
+          ),
+          TextFormField(
+            decoration: const InputDecoration(
+              labelText: 'Modelo',
+              helperText: 'Informe o modelo',
+              border: OutlineInputBorder(),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Informe o modelo do veículo';
+              }
+              return null;
+            },
+            onSaved: (value) {
+              modelo = value;
+            },
+          ),
+          SizedBox(
+            height: 30,
+          ),
+          TextFormField(
+            decoration: const InputDecoration(
+              labelText: 'Ano',
+              helperText: 'Informe o ano',
+              border: OutlineInputBorder(),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Informe o ano do veículo';
+              }
+              try {
+                var a = int.parse(value);
+              } catch (e) {
+                return 'Informe um número válido';
+              }
+              return null;
+            },
+            onSaved: (value) {
+              ano = int.parse(value!);
+            },
+          ),
+          SizedBox(
+            height: 30,
+          ),
+          TextFormField(
+            decoration: const InputDecoration(
+              suffix: Text('litros'),
+              labelText: 'Volume do tanque',
+              helperText: 'Informe o volume do tanque, em litros',
+              border: OutlineInputBorder(),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Informe volume do tanque do veículo';
+              }
+              try {
+                var a = int.parse(value);
+              } catch (e) {
+                return 'Informe um número válido';
+              }
+              return null;
+            },
+            onSaved: (value) {
+              volumeDoTanque = int.parse(value!);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Informações do veículo"),
+          content:
+              const Text("Há erros nos campos. Corrija-os e tente novamente."),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("FECHAR"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Informe os dados do veículo'),
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
+              child: Text('Informe os dados do veículo e '
+                  'depois pressione PROSSEGUIR '
+                  'para avançar para a próxima tela'),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            _buildForm(context),
+            SizedBox(
+              height: 30,
+            ),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+                    Navigator.pushNamed(context, '/analisar-precos');
+                  } else {
+                    _showDialog();
+                  }
+                },
+                child: Text('PROSSEGUIR'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(40),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
