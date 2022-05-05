@@ -16,9 +16,9 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => TelaInicial(),
+        '/': (context) => const TelaInicial(),
         '/analisar-precos': (context) =>
-            MyHomePage(title: 'Assistente de abastecimento')
+            const MyHomePage(title: 'Assistente de abastecimento')
       },
     );
   }
@@ -35,119 +35,141 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final _formKey = GlobalKey<FormState>();
-  double? preco_gasolina;
-  double? preco_etanol;
+  double? precoDaGasolina;
+  double? precoDoEtanol;
+  Veiculo? veiculo;
 
   double _calcularRelacaoEtanolGasolina() {
-    return preco_etanol! / preco_gasolina!;
+    return precoDoEtanol! / precoDaGasolina!;
   }
 
   _buildResultado(BuildContext context) {
-    if (preco_etanol != null && preco_gasolina != null) {
+    if (precoDoEtanol != null && precoDaGasolina != null) {
       double relacao = _calcularRelacaoEtanolGasolina();
       if (relacao <= 0.7) {
-        return Text('É melhor abastecer com etanol');
+        return const Text('É melhor abastecer com etanol');
       } else {
-        return Text('É melhor abastecer com gasolina');
+        return const Text('É melhor abastecer com gasolina');
       }
     } else {
       return Container();
     }
   }
 
+  _buildVeiculoCard() {
+    return Card(
+      child: ListTile(
+        leading: const CircleAvatar(
+          backgroundColor: Colors.lightBlueAccent,
+          foregroundColor: Colors.white,
+          child: Icon(Icons.car_rental),
+        ),
+        title: Text('${veiculo?.marca} - ${veiculo?.modelo}'),
+        subtitle: Text(
+            'Ano: ${veiculo?.ano}. Tanque de ${veiculo?.volumeDoTanque} litros'),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    veiculo = ModalRoute.of(context)!.settings.arguments as Veiculo;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    TextFormField(
-                      decoration: InputDecoration(
-                        prefix: Text('R\$ '),
-                        suffix: Text('/litro'),
-                        labelText: 'Preço do etanol',
-                        helperText: 'Informe o preço do etanol',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Informe o preço do etanol';
-                        }
-                        try {
-                          var a = double.parse(value);
-                        } catch (e) {
-                          return 'Informe um número válido';
-                        }
-                        return null;
-                      },
-                      onChanged: (value) {
-                        if (_formKey.currentState!.validate()) {
-                          _formKey.currentState!.save();
-                        } else {
-                          setState(() {
-                            preco_etanol = null;
-                          });
-                        }
-                      },
-                      onSaved: (value) {
-                        setState(() {
-                          preco_etanol = double.parse(value!);
-                        });
-                      },
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        prefix: Text('R\$ '),
-                        suffix: Text('/litro'),
-                        labelText: 'Preço da gasolina',
-                        helperText: 'Informe o preço da gasolina',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Informe o preço da gasolina';
-                        }
-                        try {
-                          var a = double.parse(value);
-                        } catch (e) {
-                          return 'Informe um número válido';
-                        }
-                        return null;
-                      },
-                      onChanged: (value) {
-                        if (_formKey.currentState!.validate()) {
-                          _formKey.currentState!.save();
-                        } else {
-                          setState(() {
-                            preco_gasolina = null;
-                          });
-                        }
-                      },
-                      onSaved: (value) {
-                        preco_gasolina = double.parse(value!);
-                      },
-                    ),
-                    SizedBox(
-                      height: 40,
-                    ),
-                    _buildResultado(context),
-                  ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Center(
+            child: Column(
+              children: <Widget>[
+                _buildVeiculoCard(),
+                const SizedBox(
+                  height: 20,
                 ),
-              )
-            ],
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          prefix: Text('R\$ '),
+                          suffix: Text('/litro'),
+                          labelText: 'Preço do etanol',
+                          helperText: 'Informe o preço do etanol',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Informe o preço do etanol';
+                          }
+                          try {
+                            var a = double.parse(value);
+                          } catch (e) {
+                            return 'Informe um número válido';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          if (_formKey.currentState!.validate()) {
+                            _formKey.currentState!.save();
+                          } else {
+                            setState(() {
+                              precoDoEtanol = null;
+                            });
+                          }
+                        },
+                        onSaved: (value) {
+                          setState(() {
+                            precoDoEtanol = double.parse(value!);
+                          });
+                        },
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          prefix: Text('R\$ '),
+                          suffix: Text('/litro'),
+                          labelText: 'Preço da gasolina',
+                          helperText: 'Informe o preço da gasolina',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Informe o preço da gasolina';
+                          }
+                          try {
+                            var a = double.parse(value);
+                          } catch (e) {
+                            return 'Informe um número válido';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          if (_formKey.currentState!.validate()) {
+                            _formKey.currentState!.save();
+                          } else {
+                            setState(() {
+                              precoDaGasolina = null;
+                            });
+                          }
+                        },
+                        onSaved: (value) {
+                          precoDaGasolina = double.parse(value!);
+                        },
+                      ),
+                      const SizedBox(
+                        height: 40,
+                      ),
+                      _buildResultado(context),
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -164,10 +186,7 @@ class TelaInicial extends StatefulWidget {
 
 class _TelaInicialState extends State<TelaInicial> {
   final _formKey = GlobalKey<FormState>();
-  String? marca;
-  String? modelo;
-  int? ano;
-  int? volumeDoTanque;
+  Veiculo veiculo = Veiculo.vazio();
 
   /// Retorna o formulário dos dados do veículo.
   /// O formulário contém os campos:
@@ -193,10 +212,10 @@ class _TelaInicialState extends State<TelaInicial> {
               return null;
             },
             onSaved: (value) {
-              marca = value;
+              veiculo.marca = value!;
             },
           ),
-          SizedBox(
+          const SizedBox(
             height: 30,
           ),
           TextFormField(
@@ -212,10 +231,10 @@ class _TelaInicialState extends State<TelaInicial> {
               return null;
             },
             onSaved: (value) {
-              modelo = value;
+              veiculo.modelo = value!;
             },
           ),
-          SizedBox(
+          const SizedBox(
             height: 30,
           ),
           TextFormField(
@@ -236,10 +255,10 @@ class _TelaInicialState extends State<TelaInicial> {
               return null;
             },
             onSaved: (value) {
-              ano = int.parse(value!);
+              veiculo.ano = int.parse(value!);
             },
           ),
-          SizedBox(
+          const SizedBox(
             height: 30,
           ),
           TextFormField(
@@ -261,7 +280,7 @@ class _TelaInicialState extends State<TelaInicial> {
               return null;
             },
             onSaved: (value) {
-              volumeDoTanque = int.parse(value!);
+              veiculo.volumeDoTanque = int.parse(value!);
             },
           ),
         ],
@@ -294,23 +313,23 @@ class _TelaInicialState extends State<TelaInicial> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Informe os dados do veículo'),
+        title: const Text('Informe os dados do veículo'),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Container(
-              padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
-              child: Text('Informe os dados do veículo e '
+              padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
+              child: const Text('Informe os dados do veículo e '
                   'depois pressione PROSSEGUIR '
                   'para avançar para a próxima tela'),
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             _buildForm(context),
-            SizedBox(
+            const SizedBox(
               height: 30,
             ),
             Center(
@@ -318,12 +337,13 @@ class _TelaInicialState extends State<TelaInicial> {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
-                    Navigator.pushNamed(context, '/analisar-precos');
+                    Navigator.pushNamed(context, '/analisar-precos',
+                        arguments: veiculo);
                   } else {
                     _showDialog();
                   }
                 },
-                child: Text('PROSSEGUIR'),
+                child: const Text('PROSSEGUIR'),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(40),
                 ),
@@ -334,4 +354,15 @@ class _TelaInicialState extends State<TelaInicial> {
       ),
     );
   }
+}
+
+class Veiculo {
+  String marca;
+  String modelo;
+  int ano;
+  int volumeDoTanque;
+
+  Veiculo(this.marca, this.modelo, this.ano, this.volumeDoTanque);
+
+  Veiculo.vazio() : this('', '', 0, 0);
 }
